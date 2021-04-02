@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+php=$(which php)
+
+# get the configfile (which should be the first value)
+# so strip off everything after the first space of the xdebug-config
+xdebugConfigFile=$(php -i | grep xdebug | while read line; do echo $line; exit; done)
+disabled=".disabled"
+
+# test whether we got it right
+if [ ! -f "$xdebugConfigFile" ]; then
+    echo "No XDebug configfile found!"
+    exit 1
+fi
+
+# disable xdebug by renaming the relevant .ini file
+mv ${xdebugConfigFile}{,${disabled}}
+if [ ! -f "$xdebugConfigFile" ]; then
+    echo "XDebug Disabled!"
+fi
+
+#reload php.ini in php-fpm
+kill -USR2 1

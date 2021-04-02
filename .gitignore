@@ -1,0 +1,12 @@
+.idea
+/docker-compose.yml
+
+/app/vendor
+/app/.phpstorm.meta.php
+/app/.phpunit.result.cache
+/app/_ide_helper.php
+/app/_ide_helper_models.php
+
+# Junk files
+.DS_Store
+.thumb

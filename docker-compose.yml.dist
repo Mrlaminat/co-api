@@ -1,0 +1,60 @@
+version: '3'
+
+networks:
+  dockernet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.241.0/24
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    container_name: co-api-nginx
+    ports:
+      - "8000:8080"
+    volumes:
+      - ./app:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+      - mysql
+    networks:
+      - dockernet
+
+  mysql:
+    image: mysql:5.7.22
+    container_name: co-api-mysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3315:3306"
+    environment:
+      MYSQL_DATABASE: co-api
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: root
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    networks:
+      - dockernet
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        user: www
+        uid: 1000
+        env: development
+    container_name: co-api-app
+    environment:
+      XDEBUG_CONFIG: "remote_enable=1 remote_host=192.168.241.1 remote_port=9090"
+      PHP_IDE_CONFIG: "serverName=xDebug"
+    expose:
+      - 9000
+    volumes:
+      - ./app:/var/www/html
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+    networks:
+      - dockernet

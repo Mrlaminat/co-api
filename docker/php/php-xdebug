@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# get the xdebug config
+xdebugConfigFileDisable="/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini.disabled"
+xdebugConfigFile="/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini"
+
+# test whether the ini file is restored correctly
+if [ ! -f "$xdebugConfigFileDisable" ]; then
+    echo "XDebug already enabled!"
+    exit 1
+fi
+
+#re-enable xdebug
+mv "$xdebugConfigFileDisable" "$xdebugConfigFile"
+
+# test whether the ini file is restored correctly
+if [ -f "$xdebugConfigFile" ]; then
+    echo "XDebug Enabled!"
+  else
+    echo "Something went wrong with restoring the configfile for xdebug!"
+    exit 1
+fi
+
+#reload php.ini in php-fpm
+kill -USR2 1
